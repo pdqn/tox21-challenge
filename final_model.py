@@ -16,7 +16,6 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.layers import utils
 
 
-# Import MINST data
 # load data
 
 y_tr = pd.read_csv('./tox21/tox21_labels_train.csv.gz', index_col=0, compression="gzip")
@@ -29,8 +28,8 @@ x_te_sparse = io.mmread('./tox21/tox21_sparse_test.mtx.gz').tocsc()
 
 # filter out very sparse features
 sparse_col_idx = ((x_tr_sparse > 0).mean(0) > 0.05).A.ravel()
-#x_tr = np.hstack([x_tr_dense, x_tr_sparse[:, sparse_col_idx].A])
-#x_te = np.hstack([x_te_dense, x_te_sparse[:, sparse_col_idx].A])
+x_tr = np.hstack([x_tr_dense, x_tr_sparse[:, sparse_col_idx].A])
+x_te = np.hstack([x_te_dense, x_te_sparse[:, sparse_col_idx].A])
 
 #print x_tr_dense.columns
 #print y_tr.columns
@@ -38,10 +37,10 @@ sparse_col_idx = ((x_tr_sparse > 0).mean(0) > 0.05).A.ravel()
 
 
 # Network Parameters
-n_hidden_1 = 200# 1st layer number of features
-n_hidden_2 = 200 # 2nd layer number of features
-n_hidden_3 = 200
-n_hidden_4 = 200
+n_hidden_1 = 150# 1st layer number of features
+n_hidden_2 = 150 # 2nd layer number of features
+n_hidden_3 = 150
+n_hidden_4 = 150
 n_classes = 2
 target="SR.ARE"
 
@@ -54,7 +53,7 @@ x_te=x_te_dense[rows_te]
 y_te=y_te[target][rows_te]
 y_te=pd.get_dummies(y_te)
 learning_rate = 0.05
-training_epochs = 50
+training_epochs = 10
 batch_size = 100
 display_step = 1
 n_input = x_tr.shape[1] 
