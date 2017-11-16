@@ -37,14 +37,14 @@ x_te = np.hstack([x_te_dense, x_te_sparse[:, sparse_col_idx].A])
 
 
 # Network Parameters
-n_hidden_1 = 100
-n_hidden_2 = 100
-n_hidden_3 = 100
-n_hidden_4 = 100
-n_hidden_5 = 100
-n_hidden_6 = 100
-n_hidden_7 = 100
-n_hidden_8 = 100
+n_hidden_1 = 200
+n_hidden_2 = 200
+n_hidden_3 = 200
+n_hidden_4 = 200
+n_hidden_5 = 200
+n_hidden_6 = 200
+n_hidden_7 = 200
+n_hidden_8 = 200
 n_classes = 2
 target="SR.ARE"
 
@@ -56,9 +56,9 @@ y_tr=pd.get_dummies(y_tr)
 x_te=x_te_dense[rows_te]
 y_te=y_te[target][rows_te]
 y_te=pd.get_dummies(y_te)
-learning_rate = 0.005
-training_epochs = 300
-batch_size = 200
+learning_rate = 0.01
+training_epochs = 500
+batch_size = 150
 display_step = 1
 n_input = x_tr.shape[1] 
 x = tf.placeholder("float", [None, n_input])
