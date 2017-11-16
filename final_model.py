@@ -64,12 +64,11 @@ is_training= tf.placeholder(tf.bool)
 
 
 
-# ### (1) Definition of scaled exponential linear units (SELUs)
+#Definition of scaled exponential linear units (SELUs)
 
-# In[3]:
 
 def selu(x):
-    with ops.name_scope('elu') as scope:
+    with ops.name_scope('selu') as scope:
         alpha = 1.6732632423543772848170429916717
         scale = 1.0507009873554804934193349852946
         return scale*tf.where(x>=0.0, x, alpha*tf.nn.elu(x))
@@ -82,9 +81,8 @@ n = x_te.shape[0]
 batches_test_x = [x_te[k:k+batch_size] for k in xrange(0, n,batch_size)]
 batches_test_y = [y_te[k:k+batch_size] for k in xrange(0, n,batch_size)]
 
-# ### (2) Definition of dropout variant for SNNs
+#Definition of dropout variant for SNNs
 
-# In[4]:
 
 def dropout_selu(x, rate, alpha= -1.7580993408473766, fixedPointMean=0.0, fixedPointVar=1.0, 
                  noise_shape=None, seed=None, name=None, training=False):
@@ -125,17 +123,15 @@ def dropout_selu(x, rate, alpha= -1.7580993408473766, fixedPointMean=0.0, fixedP
 
 
 
-# (1) Scale input to zero mean and unit variance
+# Scale input to zero mean and unit variance
 scaler = StandardScaler().fit(x_tr)
 
 
-# In[6]:
 
 # Tensorboard
 logs_path = './tmp'
 
 
-# In[7]:
 
 # Create model
 def multilayer_perceptron(x, weights, biases, rate, is_training):
@@ -171,11 +167,10 @@ def multilayer_perceptron(x, weights, biases, rate, is_training):
     return out_layer
 
 
-# ### (4) Initialization with STDDEV of sqrt(1/n)
-
-# In[8]:
 
 # Store layers weight & bias
+
+
 weights = {
     'h1': tf.Variable(tf.random_normal([n_input, n_hidden_1],stddev=np.sqrt(1/n_input))),
     'h2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2],stddev=np.sqrt(1/n_hidden_1))),
@@ -211,7 +206,6 @@ b=y_te #tf.reduce_max(y_te, reduction_indices=[1])
 init = tf.global_variables_initializer()
 
 
-# In[9]:
 
 # Create a histogramm for weights
 tf.summary.histogram("weights2", weights['h2'])
@@ -225,7 +219,6 @@ tf.summary.scalar("accuracy", accuracy)
 merged_summary_op = tf.summary.merge_all()
 
 
-# In[10]:
 
 # Launch the graph
 gpu_options = tf.GPUOptions(allow_growth=True)
