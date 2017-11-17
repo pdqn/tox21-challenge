@@ -1,3 +1,11 @@
+THe challenge::
+The 2014 Tox21 data challenge is designed to help scientists understand the potential of the chemicals and compounds being tested through the Toxicology in the 21st Century initiative to disrupt biological pathways in ways that may result in toxic effects.
+
+The goal of the challenge is to "crowdsource" data analysis by independent researchers to reveal how well they can predict compounds' interference in biochemical pathways using only chemical structure data. The computational models produced from the Challenge could become decision-making tools for government agencies in determining which environmental chemicals and drugs are of the greatest potential concern to human health.
+
+To get more understanding watch this video https://www.youtube.com/watch?v=vKhn1HRXgn8
+
+The dataset ::
 The Tox21 data set comprises 12,060 training samples 
 and 647 test samples that represent chemical compounds. 
 There are 801 "dense features" that represent chemical descriptors, 
