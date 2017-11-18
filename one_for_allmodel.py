@@ -70,6 +70,7 @@ learning_rate = 0.01
 training_epochs = 50
 batch_size = 300
 display_step = 1
+save_step = 2
 n_input = x_tr.shape[1] 
 x = tf.placeholder("float", [None, n_input])
 y = tf.placeholder("float", [None, n_classes])
@@ -253,56 +254,63 @@ tf.summary.scalar("accuracy", accuracy)
 # Merge all summaries into a single op
 merged_summary_op = tf.summary.merge_all()
 
-
+saver = tf.train.Saver()
 
 # Launch the graph
-gpu_options = tf.GPUOptions(allow_growth=True)
-with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-    sess.run(init)
+def main():
+    gpu_options = tf.GPUOptions(allow_growth=True)
+    with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
+        sess.run(init)
+    
+        summary_writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
+    
+        # Training cycle
+        for epoch in range(training_epochs):
+            avg_cost = 0.
+            total_batch = int(x_tr.shape[0]/batch_size)
+            # Loop over all batches
+            for i in range(total_batch):
+                batch_x, batch_y= batches_train_x[i],batches_train_y[i]
+                #batch_x, batch_y = batches_train_x[i],batches_train_y[i]
+    
+                batch_x = scaler.transform(batch_x)
+                # Run optimization op (backprop) and cost op (to get loss value)
+                _, c = sess.run([optimizer, cost], feed_dict={x: batch_x,
+                                                              y: batch_y,dropoutRate: 0.05, is_training:True})
+    
+                # Compute average loss
+                avg_cost += c / total_batch
+            # Display logs per epoch step
+            if epoch % display_step == 0:
+                print ("Epoch:", '%04d' % (epoch+1), "cost=","{:.9f}".format(avg_cost))
+                
+                accTrain, costTrain, summary = sess.run([accuracy, cost, merged_summary_op], 
+                                                            feed_dict={x: batch_x, y: batch_y,
+                                                                       dropoutRate: 0.0, is_training:False})
+                summary_writer.add_summary(summary, epoch)
+                
+                print("Train-Accuracy:", accTrain,"Train-Loss:", costTrain)
+    
+                batch_x_test, batch_y_test = x_te,y_te #batches_test_x[i],batches_test_y[i]
+                #batch_x_test, batch_y_test = x_te,y_te #batches_test_x[i],batches_test_y[i]
+    
+                batch_x_test = scaler.transform(batch_x_test)
+                accTest, costVal = sess.run([accuracy, cost], feed_dict={x: batch_x_test, y: batch_y_test,
+                                                                       dropoutRate: 0.0, is_training:False})
+    
+                sess.run(tf.local_variables_initializer())
+    
+                pred_score= sess.run(pred,feed_dict={x: batch_x_test, y: batch_y_test,dropoutRate: 0.0, is_training:False})
+                print (pred_score.shape)
+    
+                sklearn_auc = roc_auc_score(y_true=b,y_score=pred_score)
+    
+                print("Validation-AUC:", sklearn_auc,"Val-Loss:", costVal,"\n")
+                
+            if epoch % save_step == 0:
+                saved_path = saver.save(sess, './checkpoints/model-' + str(epoch) + '.ckpt')
+                print("Model saved in ", saved_path)
+    
 
-    summary_writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
-
-    # Training cycle
-    for epoch in range(training_epochs):
-        avg_cost = 0.
-        total_batch = int(x_tr.shape[0]/batch_size)
-        # Loop over all batches
-        for i in range(total_batch):
-            batch_x, batch_y= batches_train_x[i],batches_train_y[i]
-            #batch_x, batch_y = batches_train_x[i],batches_train_y[i]
-
-            batch_x = scaler.transform(batch_x)
-            # Run optimization op (backprop) and cost op (to get loss value)
-            _, c = sess.run([optimizer, cost], feed_dict={x: batch_x,
-                                                          y: batch_y,dropoutRate: 0.05, is_training:True})
-
-            # Compute average loss
-            avg_cost += c / total_batch
-        # Display logs per epoch step
-        if epoch % display_step == 0:
-            print ("Epoch:", '%04d' % (epoch+1), "cost=","{:.9f}".format(avg_cost))
-            
-            accTrain, costTrain, summary = sess.run([accuracy, cost, merged_summary_op], 
-                                                        feed_dict={x: batch_x, y: batch_y,
-                                                                   dropoutRate: 0.0, is_training:False})
-            summary_writer.add_summary(summary, epoch)
-            
-            print("Train-Accuracy:", accTrain,"Train-Loss:", costTrain)
-
-            batch_x_test, batch_y_test = x_te,y_te #batches_test_x[i],batches_test_y[i]
-            #batch_x_test, batch_y_test = x_te,y_te #batches_test_x[i],batches_test_y[i]
-
-            batch_x_test = scaler.transform(batch_x_test)
-            accTest, costVal = sess.run([accuracy, cost], feed_dict={x: batch_x_test, y: batch_y_test,
-                                                                   dropoutRate: 0.0, is_training:False})
-
-            sess.run(tf.local_variables_initializer())
-
-            pred_score= sess.run(pred,feed_dict={x: batch_x_test, y: batch_y_test,dropoutRate: 0.0, is_training:False})
-            print (pred_score.shape)
-
-            sklearn_auc = roc_auc_score(y_true=b,y_score=pred_score)
-
-            print("Validation-AUC:", sklearn_auc,"Val-Loss:", costVal,"\n")
-
-
+if __name__ == '__main__':
+    main()
