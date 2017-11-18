@@ -31,7 +31,8 @@ sparse_col_idx = ((x_tr_sparse > 0).mean(0) > 0.05).A.ravel()
 x_tr = np.hstack([x_tr_dense, x_tr_sparse[:, sparse_col_idx].A])
 x_te = np.hstack([x_te_dense, x_te_sparse[:, sparse_col_idx].A])
 
-#print x_tr_dense.columns
+print (x_tr_dense.shape)
+print (x_tr.shape)
 #print y_tr.columns
 #print x_tr_sparse.columns
 
@@ -46,7 +47,7 @@ n_hidden_6 = 200
 n_hidden_7 = 200
 n_hidden_8 = 200
 n_classes = 2
-target="SR.ARE"
+target="NR.AhR"
 
 rows_tr = np.isfinite(y_tr[target]).values
 rows_te = np.isfinite(y_te[target]).values
@@ -56,9 +57,9 @@ y_tr=pd.get_dummies(y_tr)
 x_te=x_te_dense[rows_te]
 y_te=y_te[target][rows_te]
 y_te=pd.get_dummies(y_te)
-learning_rate = 0.02
-training_epochs = 250
-batch_size = 150
+learning_rate = 0.01
+training_epochs = 100
+batch_size = 300
 display_step = 1
 n_input = x_tr.shape[1] 
 x = tf.placeholder("float", [None, n_input])

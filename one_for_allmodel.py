@@ -19,7 +19,9 @@ from tensorflow.python.layers import utils
 # load data
 
 y_tr = pd.read_csv('./tox21/tox21_labels_train.csv.gz', index_col=0, compression="gzip")
+y_tr=y_tr.fillna(0)
 y_te = pd.read_csv('./tox21/tox21_labels_test.csv.gz', index_col=0, compression="gzip") 
+y_te=y_te.fillna(0)
 x_tr_dense = pd.read_csv('./tox21/tox21_dense_train.csv.gz', index_col=0, compression="gzip").values
 x_te_dense = pd.read_csv('./tox21/tox21_dense_test.csv.gz', index_col=0, compression="gzip").values
 x_tr_sparse = io.mmread('./tox21/tox21_sparse_train.mtx.gz').tocsc()
@@ -31,20 +33,20 @@ sparse_col_idx = ((x_tr_sparse > 0).mean(0) > 0.05).A.ravel()
 x_tr = np.hstack([x_tr_dense, x_tr_sparse[:, sparse_col_idx].A])
 x_te = np.hstack([x_te_dense, x_te_sparse[:, sparse_col_idx].A])
 
-#print x_tr_dense.columns
+print (x_tr_dense.shape)
 #print y_tr.columns
-#print x_tr_sparse.columns
+print (x_tr.shape)
 
 
 # Network Parameters
-n_hidden_1 = 50
-n_hidden_2 = 50
-n_hidden_3 = 50
-n_hidden_4 = 50
-n_hidden_5 = 50
-n_hidden_6 = 50
-n_hidden_7 = 50
-n_hidden_8 = 50
+n_hidden_1 = 1024
+n_hidden_2 = 1024
+n_hidden_3 = 1024
+n_hidden_4 = 1024
+n_hidden_5 = 1024
+n_hidden_6 = 1024
+n_hidden_7 = 1024
+n_hidden_8 = 1024
 n_classes = 12
 #target="SR.ARE"
 
@@ -52,21 +54,18 @@ n_classes = 12
 #m_te=np.reshape(np.random.choice([0, 1], size=647*12, p=[.1, .9]),(647, 12))  #random values
 
 #rows_te = np.isfinite(y_te[target]).values
-x_tr=x_tr_dense
 y_tr=y_tr.values
 #y_tr=np.reshape(np.random.choice([0, 1], size=12060*12, p=[.1, .9]),(12060, 12))  #random values
 print (y_tr.shape)
 #y_tr=pd.get_dummies(y_tr)
-x_te=x_te_dense
 y_te=y_te.values
 #y_te=np.reshape(np.random.choice([0, 1], size=647*12, p=[.1, .9]),(647, 12))  #random values
 print (y_te.shape)
 #y_te=pd.get_dummies(y_te)
 
-m_tr = np.isfinite(y_tr).astype(int)
-m_te = np.isfinite(y_te).astype(int)
+#m_tr = np.isfinite(y_tr).astype(int)
+#m_te = np.isfinite(y_te).astype(int)
 #print (m)
-print (m_tr.shape)
 learning_rate = 0.01
 training_epochs = 50
 batch_size = 300
@@ -74,7 +73,7 @@ display_step = 1
 n_input = x_tr.shape[1] 
 x = tf.placeholder("float", [None, n_input])
 y = tf.placeholder("float", [None, n_classes])
-m_ph=tf.placeholder("float", [None, n_classes])
+#m_ph=tf.placeholder("float", [None, n_classes])
 dropoutRate = tf.placeholder(tf.float32)
 is_training= tf.placeholder(tf.bool)
 
@@ -90,7 +89,7 @@ def selu(x):
 n = x_tr.shape[0]
 batches_train_x = [x_tr[k:k+batch_size] for k in xrange(0, n,batch_size)]
 batches_train_y = [y_tr[k:k+batch_size] for k in xrange(0, n,batch_size)]
-batches_train_m = [m_tr[k:k+batch_size] for k in xrange(0, n,batch_size)]
+#batches_train_m = [m_tr[k:k+batch_size] for k in xrange(0, n,batch_size)]
 
 n = x_te.shape[0]
 batches_test_x = [x_te[k:k+batch_size] for k in xrange(0, n,batch_size)]
@@ -226,7 +225,7 @@ pred = multilayer_perceptron(x, weights, biases, rate=dropoutRate, is_training=i
 # Define loss and optimizer
 #cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
 #custom multitask classification cost
-cost = tf.reduce_mean(m_ph*(y * -tf.log(pred) + (1 - y) * -tf.log(1 - pred)))
+cost = tf.reduce_mean((y * -tf.log(pred) + (1 - y) * -tf.log(1 - pred)))
 optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(cost)
 
  # Test model
@@ -236,7 +235,7 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
 a = tf.reduce_max(pred, reduction_indices=[1])
 #a=tf.reduce_max(y, reduction_indices=[1])
 b=y_te #tf.reduce_max(y_te, reduction_indices=[1])
-
+print (b.dtype)
          
 # Initializing the variables
 init = tf.global_variables_initializer()
@@ -244,8 +243,8 @@ init = tf.global_variables_initializer()
 
 
 # Create a histogramm for weights
-tf.summary.histogram("weights2", weights['h2'])
-tf.summary.histogram("weights1", weights['h1'])
+#tf.summary.histogram("weights2", weights['h2'])
+#tf.summary.histogram("weights1", weights['h1'])
 
 # Create a summary to monitor cost tensor
 tf.summary.scalar("loss", cost)
@@ -269,13 +268,13 @@ with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         total_batch = int(x_tr.shape[0]/batch_size)
         # Loop over all batches
         for i in range(total_batch):
-            batch_x, batch_y ,batch_m = batches_train_x[i],batches_train_y[i],batches_train_m[i]
+            batch_x, batch_y= batches_train_x[i],batches_train_y[i]
             #batch_x, batch_y = batches_train_x[i],batches_train_y[i]
 
             batch_x = scaler.transform(batch_x)
             # Run optimization op (backprop) and cost op (to get loss value)
             _, c = sess.run([optimizer, cost], feed_dict={x: batch_x,
-                                                          y: batch_y,m_ph:batch_m,dropoutRate: 0.05, is_training:True})
+                                                          y: batch_y,dropoutRate: 0.05, is_training:True})
 
             # Compute average loss
             avg_cost += c / total_batch
@@ -284,24 +283,26 @@ with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
             print ("Epoch:", '%04d' % (epoch+1), "cost=","{:.9f}".format(avg_cost))
             
             accTrain, costTrain, summary = sess.run([accuracy, cost, merged_summary_op], 
-                                                        feed_dict={x: batch_x, y: batch_y,m_ph:batch_m,
+                                                        feed_dict={x: batch_x, y: batch_y,
                                                                    dropoutRate: 0.0, is_training:False})
             summary_writer.add_summary(summary, epoch)
             
             print("Train-Accuracy:", accTrain,"Train-Loss:", costTrain)
 
-            batch_x_test, batch_y_test,m_test = x_te,y_te,m_te #batches_test_x[i],batches_test_y[i]
+            batch_x_test, batch_y_test = x_te,y_te #batches_test_x[i],batches_test_y[i]
             #batch_x_test, batch_y_test = x_te,y_te #batches_test_x[i],batches_test_y[i]
 
             batch_x_test = scaler.transform(batch_x_test)
-            accTest, costVal = sess.run([accuracy, cost], feed_dict={x: batch_x_test, y: batch_y_test,m_ph:m_test,
+            accTest, costVal = sess.run([accuracy, cost], feed_dict={x: batch_x_test, y: batch_y_test,
                                                                    dropoutRate: 0.0, is_training:False})
 
             sess.run(tf.local_variables_initializer())
 
             pred_score= sess.run(pred,feed_dict={x: batch_x_test, y: batch_y_test,dropoutRate: 0.0, is_training:False})
+            print (pred_score.shape)
 
             sklearn_auc = roc_auc_score(y_true=b,y_score=pred_score)
 
             print("Validation-AUC:", sklearn_auc,"Val-Loss:", costVal,"\n")
+
 
