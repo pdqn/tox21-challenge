@@ -33,6 +33,11 @@ sparse_col_idx = ((x_tr_sparse > 0).mean(0) > 0.05).A.ravel()
 x_tr = np.hstack([x_tr_dense, x_tr_sparse[:, sparse_col_idx].A])
 x_te = np.hstack([x_te_dense, x_te_sparse[:, sparse_col_idx].A])
 
+
+x_te_df = pd.DataFrame(x_te,index=x_te_dense.index)
+x_te.to_csv('toxicity_inferencs.csv',index=True)
+
+
 print (x_tr_dense.shape)
 #print y_tr.columns
 print (x_tr.shape)
