@@ -23,6 +23,8 @@ y_tr=y_tr.fillna(0)
 y_te = pd.read_csv('./tox21/tox21_labels_test.csv.gz', index_col=0, compression="gzip") 
 y_te=y_te.fillna(0)
 x_tr_dense = pd.read_csv('./tox21/tox21_dense_train.csv.gz', index_col=0, compression="gzip").values
+x_te_dense = pd.read_csv('./tox21/tox21_dense_test.csv.gz', index_col=0, compression="gzip")
+test_index=x_te_dense.index
 x_te_dense = pd.read_csv('./tox21/tox21_dense_test.csv.gz', index_col=0, compression="gzip").values
 x_tr_sparse = io.mmread('./tox21/tox21_sparse_train.mtx.gz').tocsc()
 x_te_sparse = io.mmread('./tox21/tox21_sparse_test.mtx.gz').tocsc()
@@ -34,8 +36,8 @@ x_tr = np.hstack([x_tr_dense, x_tr_sparse[:, sparse_col_idx].A])
 x_te = np.hstack([x_te_dense, x_te_sparse[:, sparse_col_idx].A])
 
 
-x_te_df = pd.DataFrame(x_te,index=x_te_dense.index)
-x_te.to_csv('toxicity_inferencs.csv',index=True)
+x_te_df = pd.DataFrame(x_te,index=test_index)
+x_te_df.to_csv('toxicity_inference.csv',index=True)
 
 
 print (x_tr_dense.shape)
