@@ -15,7 +15,7 @@ from one_for_allmodel import multilayer_perceptron
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 tf.app.flags.DEFINE_integer('compound' , '0', 'which compund to test on')
-tf.app.flags.DEFINE_string('checkpoint_dir', '/home/vishalp/fox/checkpoints/','checkpoint directory to load the model from')
+tf.app.flags.DEFINE_string('checkpoint_dir', './checkpoints/','checkpoint directory to load the model from')
 tf.app.flags.DEFINE_string('csv_file', 'toxicity_inference.csv', 'csv file for testing')
 
 FLAGS = tf.app.flags.FLAGS
@@ -39,7 +39,7 @@ def main(_):
             saver.restore(sess, ckpt.model_checkpoint_path)
             pred_score = sess.run(pred, feed_dict={x:x_in.reshape(1,-1), dropoutRate:0.0, is_training:False})
             results_dict = dict(zip(markers, pred_score[0]))
-            print(results_dict)
+            print (results_dict)
 
 if __name__ == '__main__':
     tf.app.run()
