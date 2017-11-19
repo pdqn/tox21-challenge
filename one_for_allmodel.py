@@ -18,6 +18,8 @@ from tensorflow.python.layers import utils
 
 # load data
 
+
+
 y_tr = pd.read_csv('./tox21/tox21_labels_train.csv.gz', index_col=0, compression="gzip")
 y_tr=y_tr.fillna(0)
 y_te = pd.read_csv('./tox21/tox21_labels_test.csv.gz', index_col=0, compression="gzip") 
@@ -40,9 +42,9 @@ x_te_df = pd.DataFrame(x_te,index=test_index)
 x_te_df.to_csv('toxicity_inference.csv',index=True)
 
 
-print (x_tr_dense.shape)
+#print (x_tr_dense.shape)
 #print y_tr.columns
-print (x_tr.shape)
+#print (x_tr.shape)
 
 
 # Network Parameters
@@ -63,11 +65,11 @@ n_classes = 12
 #rows_te = np.isfinite(y_te[target]).values
 y_tr=y_tr.values
 #y_tr=np.reshape(np.random.choice([0, 1], size=12060*12, p=[.1, .9]),(12060, 12))  #random values
-print (y_tr.shape)
+#print (y_tr.shape)
 #y_tr=pd.get_dummies(y_tr)
 y_te=y_te.values
 #y_te=np.reshape(np.random.choice([0, 1], size=647*12, p=[.1, .9]),(647, 12))  #random values
-print (y_te.shape)
+#print (y_te.shape)
 #y_te=pd.get_dummies(y_te)
 
 #m_tr = np.isfinite(y_tr).astype(int)
@@ -156,7 +158,7 @@ logs_path = './tmp'
 
 
 # Create model
-def multilayer_perceptron(x, weights, biases, rate, is_training):
+def multilayer_perceptron(x, rate, is_training):
     # Hidden layer with SELU activation
     #print (x.shape)
     layer_1 = tf.add(tf.matmul(x, weights['h1']), biases['b1'])
@@ -227,7 +229,7 @@ biases = {
     'out': tf.Variable(tf.random_normal([n_classes],stddev=0))
 }
 # Construct model
-pred = multilayer_perceptron(x, weights, biases, rate=dropoutRate, is_training=is_training)
+pred = multilayer_perceptron(x, rate=dropoutRate, is_training=is_training)
 
 
 # Define loss and optimizer
@@ -236,14 +238,17 @@ pred = multilayer_perceptron(x, weights, biases, rate=dropoutRate, is_training=i
 cost = tf.reduce_mean((y * -tf.log(pred) + (1 - y) * -tf.log(1 - pred)))
 optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(cost)
 
+'''
  # Test model
 correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
 # Calculate accuracy
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
 a = tf.reduce_max(pred, reduction_indices=[1])
 #a=tf.reduce_max(y, reduction_indices=[1])
+'''
+
 b=y_te #tf.reduce_max(y_te, reduction_indices=[1])
-print (b.dtype)
+
          
 # Initializing the variables
 init = tf.global_variables_initializer()
@@ -257,7 +262,7 @@ init = tf.global_variables_initializer()
 # Create a summary to monitor cost tensor
 tf.summary.scalar("loss", cost)
 # Create a summary to monitor accuracy tensor
-tf.summary.scalar("accuracy", accuracy)
+#tf.summary.scalar("accuracy", accuracy)
 # Merge all summaries into a single op
 merged_summary_op = tf.summary.merge_all()
 
@@ -317,7 +322,7 @@ def main():
             if epoch % save_step == 0:
                 saved_path = saver.save(sess, './checkpoints/model-' + str(epoch) + '.ckpt')
                 print("Model saved in ", saved_path)
-    
+        
 
 if __name__ == '__main__':
     main()
