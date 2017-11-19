@@ -238,14 +238,14 @@ pred = multilayer_perceptron(x, rate=dropoutRate, is_training=is_training)
 cost = tf.reduce_mean((y * -tf.log(pred) + (1 - y) * -tf.log(1 - pred)))
 optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(cost)
 
-'''
+
  # Test model
 correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
 # Calculate accuracy
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
 a = tf.reduce_max(pred, reduction_indices=[1])
 #a=tf.reduce_max(y, reduction_indices=[1])
-'''
+
 
 b=y_te #tf.reduce_max(y_te, reduction_indices=[1])
 
